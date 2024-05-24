@@ -1,11 +1,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors'); // Import cors
+const { Server } = require('ws'); // Import ws
 
 const app = express();
 const port = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
+app.use(cors()); // Enable CORS for all origins
 
 // Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/syncbridge', {
@@ -43,6 +46,21 @@ app.get('/', (req, res) => {
 const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
+});
+
+// Set up WebSocket server
+const wss = new Server({ server });
+
+wss.on('connection', (ws) => {
+    console.log('New WebSocket connection');
+    ws.on('message', (message) => {
+        console.log('Received:', message);
+        ws.send(`Server received: ${message}`);
+    });
+
+    ws.on('close', () => {
+        console.log('WebSocket connection closed');
+    });
 });
