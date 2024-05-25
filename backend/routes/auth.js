@@ -1,57 +1,49 @@
 const express = require('express');
+const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const { getAuthUrl, setCredentials, oAuth2Client } = require('../services/googleSheetsService');
-const router = express.Router();
+const { User } = require('../models/user');
 
-const secretKey = 'your_secret_key';
-
-// Route to get the Google Sheets authentication URL
-router.get('/google-auth', (req, res) => {
-    const url = getAuthUrl();
-    res.redirect(url);
-});
-
-// Route to handle OAuth2 callback and set credentials
-router.get('/google-auth/callback', async (req, res) => {
-    const { code } = req.query;
-    try {
-        const { tokens } = await oAuth2Client.getToken(code);
-        setCredentials(tokens);
-        res.send('Authentication successful! You can close this window.');
-    } catch (error) {
-        console.error('Error retrieving access token', error);
-        res.status(500).send('Error retrieving access token');
-    }
-});
-
-// User registration
-router.post('/register', async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User({ name, email, password: hashedPassword });
-        await user.save();
-        res.status(201).json({ message: 'User registered successfully' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// User login
+// Login route
 router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(401).json({ error: 'Invalid email or password' });
-        }
-        const token = jwt.sign({ userId: user._id }, secretKey, { expiresIn: '1h' });
-        res.json({ token });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    const { email, password } = req.body;
+
+    // Find the user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+        return res.status(400).json({ message: 'Invalid email or password' });
     }
+
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+        return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    // Generate JWT
+    const token = jwt.sign({ userId: user._id }, 'your_jwt_secret', { expiresIn: '1h' });
+
+    res.json({ token });
+});
+
+// Register route
+router.post('/register', async (req, res) => {
+    const { email, password } = req.body;
+
+    // Check if the user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        return res.status(400).json({ message: 'Email already in use' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user
+    const newUser = new User({ email, password: hashedPassword });
+    await newUser.save();
+
+    res.status(201).json({ message: 'User created successfully' });
 });
 
 module.exports = router;
