@@ -3,10 +3,18 @@ import React, { useState } from 'react';
 const EditSyncTask = ({ task, onUpdateTask, onCancel }) => {
     const [taskName, setTaskName] = useState(task.name);
     const [status, setStatus] = useState(task.status);
+    const [dueDate, setDueDate] = useState(task.dueDate ? task.dueDate.split('T')[0] : '');
+    const [priority, setPriority] = useState(task.priority || 'Medium');
+    const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const updatedTask = { ...task, name: taskName, status };
+        if (!taskName) {
+            setError('Task name is required');
+            return;
+        }
+
+        const updatedTask = { ...task, name: taskName, status, dueDate, priority };
         await onUpdateTask(updatedTask);
     };
 
@@ -32,8 +40,29 @@ const EditSyncTask = ({ task, onUpdateTask, onCancel }) => {
                     <option value="Inactive">Inactive</option>
                 </select>
             </div>
-            <button type="submit">Update Task</button>
-            <button type="button" onClick={onCancel}>Cancel</button>
+            <div>
+                <label>Due Date:</label>
+                <input
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                />
+            </div>
+            <div>
+                <label>Priority:</label>
+                <select
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value)}
+                    required
+                >
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            <button type="submit" className="btn btn-primary">Update Task</button>
+            <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>
         </form>
     );
 };

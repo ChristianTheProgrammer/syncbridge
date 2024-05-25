@@ -1,35 +1,71 @@
-
 const express = require('express');
 const router = express.Router();
 const { SyncTask } = require('../models/syncTask');
 
-// Create a new sync task
-router.post('/', async (req, res) => {
-    const { name, status } = req.body;
-    const newTask = new SyncTask({ name, status });
-    await newTask.save();
-    res.status(201).json(newTask);
+// Get all sync tasks
+router.get('/', async (req, res) => {
+    try {
+        const tasks = await SyncTask.find();
+        res.json(tasks);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching tasks', error });
+    }
 });
 
-// Retrieve all sync tasks
-router.get('/', async (req, res) => {
-    const tasks = await SyncTask.find();
-    res.status(200).json(tasks);
+// Create a new sync task
+router.post('/', async (req, res) => {
+    const { name, status, dueDate, priority } = req.body;
+    try {
+        const newTask = new SyncTask({ name, status, dueDate, priority });
+        await newTask.save();
+        res.status(201).json(newTask);
+    } catch (error) {
+        res.status(500).json({ message: 'Error creating task', error });
+    }
 });
 
 // Update a sync task
 router.put('/:id', async (req, res) => {
-    const { id } = req.params;
-    const { name, status } = req.body;
-    const updatedTask = await SyncTask.findByIdAndUpdate(id, { name, status }, { new: true });
-    res.status(200).json(updatedTask);
+    const { name, status, dueDate, priority } = req.body;
+    try {
+        const task = await SyncTask.findByIdAndUpdate(
+            req.params.id,
+            { name, status, dueDate, priority },
+            { new: true }
+        );
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+        res.json(task);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating task', error });
+    }
+});
+
+// Mark task as completed
+router.put('/:id/complete', async (req, res) => {
+    try {
+        const task = await SyncTask.findByIdAndUpdate(req.params.id, { completed: true }, { new: true });
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+        res.json(task);
+    } catch (error) {
+        res.status(500).json({ message: 'Error marking task as completed', error });
+    }
 });
 
 // Delete a sync task
 router.delete('/:id', async (req, res) => {
-    const { id } = req.params;
-    await SyncTask.findByIdAndDelete(id);
-    res.status(204).send();
+    try {
+        const task = await SyncTask.findByIdAndDelete(req.params.id);
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+        res.json({ message: 'Task deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting task', error });
+    }
 });
 
 module.exports = router;
