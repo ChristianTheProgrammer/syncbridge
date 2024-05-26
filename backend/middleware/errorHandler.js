@@ -1,7 +1,7 @@
 // middleware/errorHandler.js
-const errorHandler = (err, req, res, next) => {
-    console.error(err.stack); // Log the error stack trace for debugging purposes
-    res.status(500).json({ error: err.message }); // Send a 500 Internal Server Error response with the error message
-};
+function errorHandler(err, req, res, next) {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+}
 
 module.exports = errorHandler;
