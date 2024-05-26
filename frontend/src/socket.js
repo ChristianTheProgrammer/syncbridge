@@ -1,24 +1,13 @@
-// Initialize WebSocket connection
-const socket = new WebSocket('ws://localhost:5000/ws');
+import { io } from 'socket.io-client';
 
-// When the connection is open
-socket.onopen = () => {
-    console.log('WebSocket connection established');
-};
+const socket = io('http://localhost:5000'); // Ensure this URL matches your backend server
 
-// When a message is received
-socket.onmessage = (event) => {
-    console.log('WebSocket message received:', event.data);
-};
+socket.on('connect', () => {
+    console.log('Socket.io connection established');
+});
 
-// When there is an error
-socket.onerror = (error) => {
-    console.error('WebSocket error:', error);
-};
-
-// When the connection is closed
-socket.onclose = () => {
-    console.log('WebSocket connection closed');
-};
+socket.on('disconnect', () => {
+    console.log('Socket.io connection closed');
+});
 
 export default socket;

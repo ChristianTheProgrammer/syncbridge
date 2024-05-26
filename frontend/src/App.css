@@ -1,11 +1,13 @@
 /* App.css */
 body {
   font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
 }
 
 .navbar {
   background-color: #333;
   padding: 10px;
+  margin-bottom: 20px;
 }
 
 .nav-list {
@@ -41,4 +43,29 @@ body {
   border: none;
   color: white;
   cursor: pointer;
+}
+
+.card-header {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.card-body p {
+  font-size: 1.1em;
+}
+
+.list-group-item {
+  cursor: pointer;
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+.spinner-border {
+  margin-top: 20px;
+}
+
+.chart-container {
+  margin-top: 20px;
 }

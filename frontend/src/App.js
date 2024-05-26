@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard';
 import Login from './components/Login';
 import Register from './components/Register';
 import UserProfile from './components/UserProfile';
+import Logs from './components/Logs';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const App = () => {
@@ -42,6 +43,9 @@ const App = () => {
                 <li className="nav-item">
                   <Link className="nav-link" to="/dashboard">Dashboard</Link>
                 </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/logs">Logs</Link>
+                </li>
                 {isAuthenticated ? (
                   <>
                     <li className="nav-item">
@@ -69,6 +73,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
+            <Route path="/logs" element={isAuthenticated ? <Logs /> : <Navigate to="/login" />} />
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
             <Route path="/register" element={<Register />} />
             <Route path="/profile" element={isAuthenticated ? <UserProfile onLogout={handleLogout} /> : <Navigate to="/login" />} />
